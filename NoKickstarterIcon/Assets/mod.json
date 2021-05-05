@@ -1,0 +1,15 @@
+{
+    "Name": "NoKickstarterIcon",
+    "Enabled": true,
+    "Version": "v1.0.0",
+    "Description": "Removes the Kickstarter Icon from backer pilots",
+    "Author": "sqparadox",
+    "Website": "https://github.com/sqparadox/noKickstarterIcon",
+	
+    "DLL": "NoKickstarterIcon.dll",
+	
+	"Settings": {
+		"ChangeIconToRonin" : true,
+		"ChangeColorToRonin" : true
+	}
+}
