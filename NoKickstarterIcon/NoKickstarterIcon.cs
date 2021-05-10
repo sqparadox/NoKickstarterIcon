@@ -1,5 +1,6 @@
 ﻿using BattleTech;
 using BattleTech.UI;
+using BattleTech.UI.Tooltips;
 using Harmony;
 using Newtonsoft.Json;
 using SVGImporter;
@@ -37,7 +38,7 @@ namespace NoKickstarterIcon
             {
                 return settings.ChangeIconToRonin;
             }
-            public static bool Prefix(SimGameState __instance, Pilot p, ref SVGAsset __result, Pilot ___commander)
+            public static void Postfix(SimGameState __instance, Pilot p, ref SVGAsset __result, Pilot ___commander)
             {
                 try
                 {
@@ -50,9 +51,7 @@ namespace NoKickstarterIcon
                 catch (Exception e)
                 {
                     Logger.LogError(e);
-                    return true;
                 }
-                return false;
             }
         }
 
@@ -63,7 +62,7 @@ namespace NoKickstarterIcon
             {
                 return settings.ChangeColorToRonin;
             }
-            public static bool Prefix(SimGameState __instance, Pilot p, ref UIColor __result, Pilot ___commander)
+            public static void Postfix(SimGameState __instance, Pilot p, ref UIColor __result, Pilot ___commander)
             {
                 try
                 {
@@ -77,11 +76,36 @@ namespace NoKickstarterIcon
                 catch (Exception e)
                 {
                     Logger.LogError(e);
-                    return true;
                 }
-                return false;
             }
-
+        }
+        [HarmonyPatch(typeof(SimGameState), "SetupRoninTooltip")]
+        public static class NoKickstarterIcon_SetupRoninTooltip_Patch
+        {
+            public static bool Prepare()
+            {
+                return settings.ChangeTooltipToRonin;
+            }
+            public static void Postfix(HBSTooltip RoninTooltip, Pilot pilot)
+            {
+                if (RoninTooltip != null)
+                {
+                    string text;
+                    if (pilot.pilotDef.IsVanguard || pilot.pilotDef.IsRonin)
+                        text = "UnitMechWarriorSpecial";
+                    else
+                    {
+                        if (pilot != UnityGameInstance.BattleTechGame.Simulation.Commander)
+                            return;
+                        text = "UnitMechWarriorCommander";
+                    }
+                    if (!string.IsNullOrEmpty(text) && UnityGameInstance.BattleTechGame.DataManager.BaseDescriptionDefs.Exists(text))
+                    {
+                        BaseDescriptionDef def = UnityGameInstance.BattleTechGame.DataManager.BaseDescriptionDefs.Get(text);
+                        RoninTooltip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(def));
+                    }
+                }
+            }
         }
 
         public class Logger
@@ -115,7 +139,8 @@ namespace NoKickstarterIcon
         internal class ModSettings
         {
             public bool ChangeIconToRonin = true;
-            public bool ChangeColorToRonin = true;
+            public bool ChangeColorToRonin = false;
+            public bool ChangeTooltipToRonin = false;
         }
     }
 }
